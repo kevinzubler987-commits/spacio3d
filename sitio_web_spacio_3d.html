@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>spacio 3d | Impresión, Diseño & Modelado 3D</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0B0F17',
+                            card: '#151C28',
+                            border: '#2A364F',
+                            cyan: '#00F0FF',
+                            purple: '#7000FF',
+                            pink: '#FF007A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0F17;
+            color: #E2E8F0;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+        }
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(112, 0, 255, 0.25);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #00F0FF 0%, #7000FF 50%, #FF007A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-grid-pattern {
+            background-size: 30px 30px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A364F;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F0FF;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-slate-100 min-h-screen flex flex-col justify-between bg-grid-pattern antialiased">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-brand-dark/80 border-b border-brand-border/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('inicio')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-cyan via-brand-purple to-brand-pink p-[2px]">
+                        <div class="w-full h-full bg-brand-dark rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-pink fa-cube text-xl"></i>
+                        </div>
+                    </div>
+                    <span class="text-2xl font-black tracking-wider text-white">spacio <span class="text-brand-cyan">3d</span></span>
+                </div>
+
+                <!-- Desktop Nav Tabs -->
+                <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                    <button id="nav-inicio" onclick="switchTab('inicio')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-brand-cyan bg-brand-card border border-brand-cyan/30">
+                        <i class="fa-solid fa-house mr-2"></i>Inicio
+                    </button>
+                    <button id="nav-productos" onclick="switchTab('productos')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-brand-card/50 transition-all">
+                        <i class="fa-solid fa-layer-group mr-2"></i>Catálogo
+                    </button>
+                    <button id="nav-nosotros" onclick="switchTab('nosotros')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-brand-card/50 transition-all">
+                        <i class="fa-solid fa-circle-info mr-2"></i>Sobre Nosotros
+                    </button>
+                    <a href="https://instagram.com/spacio.ar_" target="_blank" class="px-4 py-2 rounded-lg text-sm font-medium text-pink-400 hover:text-pink-300 hover:bg-pink-500/10 transition-all">
+                        <i class="fa-brands fa-instagram mr-2 text-lg"></i>@spacio.ar_
+                    </a>
+                </nav>
+
+                <!-- Right Actions (Admin Lock / Status) -->
+                <div class="flex items-center space-x-3">
+                    <button id="admin-badge" onclick="openAdminModal()" class="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-brand-card border border-brand-border hover:border-brand-cyan/50 text-xs sm:text-sm font-medium text-slate-300 transition-all">
+                        <i id="admin-lock-icon" class="fa-solid fa-lock text-brand-cyan"></i>
+                        <span id="admin-btn-text">Acceso Dueño</span>
+                    </button>
+                    
+                    <!-- Mobile Hamburger -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-brand-card text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-brand-border bg-brand-dark/95 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('inicio'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-200 hover:bg-brand-card font-medium">
+                <i class="fa-solid fa-house w-6"></i>Inicio
+            </button>
+            <button onclick="switchTab('productos'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-200 hover:bg-brand-card font-medium">
+                <i class="fa-solid fa-layer-group w-6"></i>Catálogo
+            </button>
+            <button onclick="switchTab('nosotros'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-200 hover:bg-brand-card font-medium">
+                <i class="fa-solid fa-circle-info w-6"></i>Sobre Nosotros
+            </button>
+            <a href="https://instagram.com/spacio.ar_" target="_blank" class="block w-full text-left px-3 py-2 rounded-lg text-pink-400 hover:bg-pink-500/10 font-medium">
+                <i class="fa-brands fa-instagram w-6"></i>Instagram @spacio.ar_
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+
+        <!-- ================= TAB 1: INICIO ================= -->
+        <section id="tab-inicio" class="tab-content block space-y-16">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl bg-gradient-to-br from-brand-card via-brand-dark to-brand-card border border-brand-border p-8 sm:p-12 lg:p-16 overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-96 h-96 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-brand-purple/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                    <div class="space-y-6">
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-semibold tracking-wide">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Diseño & Manufactura Aditiva de Alta Calidad</span>
+                        </div>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
+                            Transformamos ideas digitales en <span class="text-gradient">realidad 3D</span>.
+                        </h1>
+                        <p class="text-slate-400 text-base sm:text-lg max-w-xl">
+                            En <strong class="text-slate-200">spacio 3d</strong> fabricamos piezas únicas, decoración de vanguardia, coleccionables y prototipos funcionales con precisión absoluta.
+                        </p>
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <button onclick="switchTab('productos')" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-purple text-slate-950 font-bold hover:opacity-90 transition-all transform hover:-translate-y-0.5 glow-cyan flex items-center space-x-2">
+                                <span>Ver Catálogo</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            <button onclick="switchTab('nosotros')" class="px-6 py-3.5 rounded-xl bg-brand-card border border-brand-border hover:border-slate-500 text-slate-200 font-semibold transition-all">
+                                Conocer la Empresa
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Decorative 3D Tech Card -->
+                    <div class="relative flex justify-center">
+                        <div class="relative w-full max-w-md aspect-square rounded-2xl bg-gradient-to-tr from-brand-border/40 to-brand-card border border-brand-border/80 p-6 flex flex-col justify-between shadow-2xl backdrop-blur-sm group hover:border-brand-cyan/50 transition-all duration-500">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-mono text-slate-400">IMPRESIÓN FDM / RESINA</span>
+                                <i class="fa-solid fa-cubes text-3xl text-brand-cyan animate-pulse"></i>
+                            </div>
+                            <div class="my-auto text-center space-y-4">
+                                <div class="inline-block p-6 rounded-2xl bg-brand-dark/80 border border-brand-border group-hover:scale-105 transition-transform duration-500">
+                                    <i class="fa-solid fa-layer-group text-6xl text-gradient"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Piezas Personalizadas</h3>
+                                <p class="text-xs text-slate-400">Modelado a medida, prototipos, figuras y accesorios decorativos.</p>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-500 border-t border-brand-border/50 pt-4">
+                                <span>Precisión: ±0.1mm</span>
+                                <span>Materiales: PLA, ABS, PETG, Resina</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Highlights -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 rounded-2xl bg-brand-card/50 border border-brand-border hover:border-brand-cyan/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan text-xl mb-4">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Diseño Personalizado</h3>
+                    <p class="text-sm text-slate-400">¿Tienes un archivo o una idea? Lo modelamos y ajustamos a tus requerimientos exactos.</p>
+                </div>
+                <div class="p-6 rounded-2xl bg-brand-card/50 border border-brand-border hover:border-brand-purple/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-purple/10 border border-brand-purple/20 flex items-center justify-center text-brand-purple text-xl mb-4">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Máxima Calidad</h3>
+                    <p class="text-sm text-slate-400">Utilizamos polímeros y resinas de primera calidad para garantizar acabados impecables y duraderos.</p>
+                </div>
+                <div class="p-6 rounded-2xl bg-brand-card/50 border border-brand-border hover:border-brand-pink/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center text-brand-pink text-xl mb-4">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Envíos Rápidos</h3>
+                    <p class="text-sm text-slate-400">Producción ágil y despachos seguros directamente a tu domicilio o punto de entrega.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: PRODUCTOS / CATALOGO ================= -->
+        <section id="tab-productos" class="tab-content hidden space-y-8">
+            
+            <!-- Section Header & Filter Controls -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-brand-border pb-6">
+                <div>
+                    <h2 class="text-3xl font-black text-white">Catálogo de Productos</h2>
+                    <p class="text-slate-400 text-sm mt-1">Explora nuestras creaciones más recientes y solicita el tuyo.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Search Input -->
+                    <div class="relative min-w-[200px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="catalog-search" oninput="filterProducts()" placeholder="Buscar producto..." class="w-full bg-brand-card border border-brand-border focus:border-brand-cyan text-white text-xs rounded-xl pl-9 pr-3 py-2.5 outline-none transition-all">
+                    </div>
+
+                    <!-- Category Filter -->
+                    <select id="catalog-filter" onchange="filterProducts()" class="bg-brand-card border border-brand-border focus:border-brand-cyan text-slate-300 text-xs rounded-xl px-3 py-2.5 outline-none cursor-pointer transition-all">
+                        <option value="todos">Todas las categorías</option>
+                        <option value="Decoración">Decoración</option>
+                        <option value="Accesorios">Accesorios</option>
+                        <option value="Funcional">Funcional</option>
+                        <option value="Figuras">Figuras / Coleccionables</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products Grid Container -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic products will be injected here via JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="no-products-msg" class="hidden text-center py-16 bg-brand-card/30 rounded-2xl border border-brand-border">
+                <i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i>
+                <h3 class="text-lg font-bold text-slate-300">No se encontraron productos</h3>
+                <p class="text-sm text-slate-500">Prueba ajustando los filtros o el término de búsqueda.</p>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: SOBRE NOSOTROS ================= -->
+        <section id="tab-nosotros" class="tab-content hidden space-y-12">
+            
+            <!-- About Hero -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-6">
+                    <h2 class="text-3xl sm:text-4xl font-black text-white">Sobre <span class="text-gradient">spacio 3d</span></h2>
+                    <p class="text-slate-300 leading-relaxed text-base">
+                        Somos una empresa apasionada por la tecnología de impresión 3D y el diseño tridimensional. Nacimos con la visión de llevar ideas complejas y creativas desde una pantalla hasta el mundo físico.
+                    </p>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Ya sea que busques dar un toque moderno a tus espacios con macetas geométricas y decoración minimalista, o requieras repuestos funcionales personalizados, en <strong>spacio 3d</strong> brindamos asesoría y manufactura de máxima precisión.
+                    </p>
+
+                    <!-- Instagram Main Card Highlight -->
+                    <div class="p-6 rounded-2xl bg-gradient-to-br from-pink-950/30 via-brand-card to-purple-950/30 border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
+                                <div class="w-full h-full bg-brand-dark rounded-[14px] flex items-center justify-center">
+                                    <i class="fa-brands fa-instagram text-3xl text-pink-500"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white">Síguenos en Instagram</h4>
+                                <p class="text-xs text-pink-300/80">Entérate de nuevos lanzamientos y videos del proceso</p>
+                                <span class="text-sm font-semibold text-pink-400">@spacio.ar_</span>
+                            </div>
+                        </div>
+                        <a href="https://instagram.com/spacio.ar_" target="_blank" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-xs hover:opacity-90 transition-all text-center flex items-center justify-center space-x-2 shadow-lg shadow-pink-500/20">
+                            <span>Visitar Perfil</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
+                        <div class="flex items-center space-x-3 text-brand-cyan">
+                            <i class="fa-solid fa-location-dot text-xl"></i>
+                            <h3 class="font-bold text-white">Taller & Ubicación</h3>
+                        </div>
+                        <p class="text-xs text-slate-400">Atención digital y envíos a todo el país. Talleres de producción equipados con tecnología de última generación.</p>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
+                        <div class="flex items-center space-x-3 text-brand-purple">
+                            <i class="fa-solid fa-envelope text-xl"></i>
+                            <h3 class="font-bold text-white">Contacto Directo</h3>
+                        </div>
+                        <p class="text-xs text-slate-400">¿Consultas comerciales o proyectos especiales?</p>
+                        <p class="text-xs font-mono text-slate-200">contacto@spacio3d.com</p>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-brand-card border border-brand-border space-y-3">
+                        <div class="flex items-center space-x-3 text-brand-pink">
+                            <i class="fa-solid fa-clock text-xl"></i>
+                            <h3 class="font-bold text-white">Horarios de Atención</h3>
+                        </div>
+                        <p class="text-xs text-slate-400">Lunes a Viernes: 09:00 - 18:00 hs<br>Sábados: 10:00 - 14:00 hs</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: PANEL DEL DUEÑO (SOLO ADMIN) ================= -->
+        <section id="tab-admin" class="tab-content hidden space-y-8">
+            <div class="bg-brand-card border border-brand-cyan/40 rounded-3xl p-6 sm:p-8 space-y-6 glow-cyan">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-brand-border pb-4">
+                    <div>
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-cyan/10 text-brand-cyan text-xs font-semibold mb-2">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <span>Modo Administrador Activo</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-white">Panel Exclusivo del Dueño</h2>
+                        <p class="text-xs text-slate-400">Sube fotos y gestiona los productos publicados en el catálogo.</p>
+                    </div>
+
+                    <button onclick="logoutAdmin()" class="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Cerrar Sesión
+                    </button>
+                </div>
+
+                <!-- Form to Add New Product -->
+                <form id="add-product-form" onsubmit="handleProductUpload(event)" class="space-y-6">
+                    <h3 class="text-base font-bold text-white flex items-center">
+                        <i class="fa-solid fa-plus-circle text-brand-cyan mr-2"></i> Cargar Nuevo Producto
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left side inputs -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Producto *</label>
+                                <input type="text" id="prod-title" required placeholder="Ej. Maceta Geométrica Hexagon" class="w-full bg-brand-dark border border-brand-border focus:border-brand-cyan text-white text-xs rounded-xl px-4 py-3 outline-none">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Precio ($) *</label>
+                                    <input type="number" id="prod-price" required min="0" step="0.01" placeholder="3500" class="w-full bg-brand-dark border border-brand-border focus:border-brand-cyan text-white text-xs rounded-xl px-4 py-3 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría *</label>
+                                    <select id="prod-category" required class="w-full bg-brand-dark border border-brand-border focus:border-brand-cyan text-slate-300 text-xs rounded-xl px-3 py-3 outline-none">
+                                        <option value="Decoración">Decoración</option>
+                                        <option value="Accesorios">Accesorios</option>
+                                        <option value="Funcional">Funcional</option>
+                                        <option value="Figuras">Figuras / Coleccionables</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Descripción breve *</label>
+                                <textarea id="prod-desc" required rows="3" placeholder="Detalla dimensiones, material utilizado o colores disponibles..." class="w-full bg-brand-dark border border-brand-border focus:border-brand-cyan text-white text-xs rounded-xl px-4 py-3 outline-none resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Right side: Image upload with preview -->
+                        <div class="space-y-4 flex flex-col justify-between">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Fotografía del Producto *</label>
+                                
+                                <div class="relative border-2 border-dashed border-brand-border hover:border-brand-cyan/50 rounded-2xl p-4 text-center cursor-pointer transition-all bg-brand-dark/40" onclick="document.getElementById('prod-file').click()">
+                                    <input type="file" id="prod-file" accept="image/*" onchange="previewImage(event)" class="hidden">
+                                    
+                                    <div id="upload-placeholder" class="py-6 space-y-2">
+                                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-cyan"></i>
+                                        <p class="text-xs font-semibold text-slate-300">Haz clic aquí para seleccionar la foto</p>
+                                        <p class="text-[10px] text-slate-500">Soporta PNG, JPG, WEBP (Se guardará en local)</p>
+                                    </div>
+
+                                    <!-- Image Preview Container -->
+                                    <div id="preview-container" class="hidden relative">
+                                        <img id="img-preview" src="" alt="Vista previa" class="max-h-48 mx-auto rounded-lg object-cover shadow-lg border border-brand-border">
+                                        <p class="text-[10px] text-brand-cyan mt-2">Toca para cambiar la imagen</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-cyan via-brand-purple to-brand-pink text-slate-950 font-black text-sm hover:opacity-90 transition-all glow-cyan flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-upload"></i>
+                                <span>Publicar en el Catálogo</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Admin Existing Products List -->
+                <div class="pt-6 border-t border-brand-border space-y-4">
+                    <h3 class="text-base font-bold text-white">Gestión de Productos Publicados</h3>
+                    <div id="admin-products-list" class="space-y-3">
+                        <!-- Dynamic list for admin deletion/management -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-brand-border bg-brand-dark/90 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-lg font-black text-white">spacio <span class="text-brand-cyan">3d</span></span>
+                <span class="text-xs text-slate-500">| Impresión & Modelado 3D</span>
+            </div>
+            
+            <p class="text-xs text-slate-500 text-center">
+                &copy; 2026 spacio 3d. Todos los derechos reservados.
+            </p>
+
+            <div class="flex items-center space-x-4">
+                <a href="https://instagram.com/spacio.ar_" target="_blank" class="text-slate-400 hover:text-pink-400 text-xl transition-colors">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL: LOGIN DUEÑO -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-2xl max-w-sm w-full p-6 space-y-5 relative shadow-2xl">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center mx-auto text-brand-cyan text-xl">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Acceso del Dueño</h3>
+                <p class="text-xs text-slate-400">Ingresa la clave de administrador para publicar nuevos productos.</p>
+            </div>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
+                    <input type="password" id="admin-pass-input" required placeholder="Ingresa tu clave (demo: admin123)" class="w-full bg-brand-dark border border-brand-border focus:border-brand-cyan text-white text-xs rounded-xl px-4 py-3 outline-none">
+                    <p id="admin-error-msg" class="text-[11px] text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i>Contraseña incorrecta</p>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-purple text-slate-950 font-bold text-xs hover:opacity-90 transition-all">
+                    Ingresar al Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PREVENTA / PRESUPUESTO PRODUCTO -->
+    <div id="quote-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-2xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+            <button onclick="closeQuoteModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-mono text-brand-cyan uppercase tracking-wider">Solicitud de Pedido</span>
+                <h3 id="quote-prod-title" class="text-xl font-bold text-white">--</h3>
+                <p id="quote-prod-price" class="text-sm font-semibold text-brand-cyan">--</p>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Para coordinar el pago, personalizaciones de color, tamaño o envíos, escríbenos directamente a nuestro Instagram oficial con el nombre de este producto.
+            </p>
+
+            <div class="pt-2">
+                <a id="instagram-quote-link" href="https://instagram.com/spacio.ar_" target="_blank" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-xs hover:opacity-90 transition-all text-center flex items-center justify-center space-x-2">
+                    <i class="fa-brands fa-instagram text-base"></i>
+                    <span>Contactar por Instagram @spacio.ar_</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Default Mock Products
+        const initialProducts = [
+            {
+                id: '1',
+                title: 'Maceta Geométrica Facetada',
+                price: 3200,
+                category: 'Decoración',
+                description: 'Diseño minimalista impreso en PLA de alta calidad. Ideal para suculentas y decoración moderna de interiores.',
+                image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: '2',
+                title: 'Soporte de Auriculares Tech',
+                price: 4500,
+                category: 'Accesorios',
+                description: 'Soporte ergonómico con base antideslizante para organizar tu escritorio con estética futurista.',
+                image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: '3',
+                title: 'Figura Decorativa Low Poly',
+                price: 5800,
+                category: 'Figuras',
+                description: 'Escultura geométrica con acabado satinado. Pieza de diseño coleccionable impreso en alta definición.',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'
+            }
+        ];
+
+        // Global State
+        let products = [];
+        let isAdminLoggedIn = false;
+        let selectedImageDataUrl = '';
+
+        // Initialize App
+        window.onload = function() {
+            // Load products from localStorage or fallback to defaults
+            const stored = localStorage.getItem('spacio3d_products');
+            if (stored) {
+                try {
+                    products = JSON.parse(stored);
+                } catch(e) {
+                    products = initialProducts;
+                }
+            } else {
+                products = initialProducts;
+                saveProductsToStorage();
+            }
+
+            renderProducts();
+        };
+
+        function saveProductsToStorage() {
+            localStorage.setItem('spacio3d_products', JSON.stringify(products));
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active style from desktop nav buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-brand-cyan', 'bg-brand-card', 'border', 'border-brand-cyan/30');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Show selected tab
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            // Highlight nav button if exists
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-400');
+                activeNav.classList.add('text-brand-cyan', 'bg-brand-card', 'border', 'border-brand-cyan/30');
+            }
+
+            // Scroll to top smooth
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Render Products in Catalog
+        function renderProducts(itemsToRender = products) {
+            const grid = document.getElementById('products-grid');
+            const emptyMsg = document.getElementById('no-products-msg');
+            grid.innerHTML = '';
+
+            if (itemsToRender.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            } else {
+                emptyMsg.classList.add('hidden');
+            }
+
+            itemsToRender.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = "bg-brand-card border border-brand-border rounded-2xl overflow-hidden hover:border-brand-cyan/40 transition-all duration-300 flex flex-col justify-between group";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="relative aspect-square overflow-hidden bg-brand-dark">
+                            <img src="${prod.image}" alt="${prod.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x600/151C28/00F0FF?text=Spacio+3D'">
+                            <span class="absolute top-3 left-3 bg-brand-dark/80 backdrop-blur-md border border-brand-border text-brand-cyan text-[10px] font-semibold px-2.5 py-1 rounded-full">
+                                ${prod.category}
+                            </span>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h3 class="font-bold text-white text-base group-hover:text-brand-cyan transition-colors">${prod.title}</h3>
+                            <p class="text-xs text-slate-400 line-clamp-2">${prod.description}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0 flex items-center justify-between border-t border-brand-border/40 mt-4">
+                        <span class="text-lg font-black text-white">$${Number(prod.price).toLocaleString()}</span>
+                        <button onclick="openQuoteModal('${prod.title}', ${prod.price})" class="px-3.5 py-2 rounded-xl bg-brand-cyan/10 hover:bg-brand-cyan text-brand-cyan hover:text-slate-950 border border-brand-cyan/30 text-xs font-bold transition-all flex items-center space-x-1.5">
+                            <span>Pedir</span>
+                            <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Also render admin management list if logged in
+            if (isAdminLoggedIn) {
+                renderAdminList();
+            }
+        }
+
+        // Filter Products
+        function filterProducts() {
+            const query = document.getElementById('catalog-search').value.toLowerCase();
+            const category = document.getElementById('catalog-filter').value;
+
+            const filtered = products.filter(p => {
+                const matchesSearch = p.title.toLowerCase().includes(query) || p.description.toLowerCase().includes(query);
+                const matchesCategory = category === 'todos' || p.category === category;
+                return matchesSearch && matchesCategory;
+            });
+
+            renderProducts(filtered);
+        }
+
+        // Admin Login & Modal
+        function openAdminModal() {
+            if (isAdminLoggedIn) {
+                switchTab('admin');
+            } else {
+                document.getElementById('admin-modal').classList.remove('hidden');
+                document.getElementById('admin-pass-input').value = '';
+                document.getElementById('admin-error-msg').classList.add('hidden');
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById('admin-pass-input').value;
+            
+            // Password verification (Default: admin123)
+            if (pass === 'admin123') {
+                isAdminLoggedIn = true;
+                closeAdminModal();
+                
+                // Update UI for logged in state
+                document.getElementById('admin-btn-text').innerText = 'Panel Dueño';
+                document.getElementById('admin-lock-icon').className = 'fa-solid fa-lock-open text-brand-cyan';
+                
+                renderAdminList();
+                switchTab('admin');
+            } else {
+                document.getElementById('admin-error-msg').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            document.getElementById('admin-btn-text').innerText = 'Acceso Dueño';
+            document.getElementById('admin-lock-icon').className = 'fa-solid fa-lock text-brand-cyan';
+            switchTab('inicio');
+        }
+
+        // Image File Preview for Owner Upload
+        function previewImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    selectedImageDataUrl = evt.target.result;
+                    document.getElementById('img-preview').src = selectedImageDataUrl;
+                    document.getElementById('preview-container').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Handle Product Upload (Owner)
+        function handleProductUpload(e) {
+            e.preventDefault();
+
+            if (!selectedImageDataUrl) {
+                alert('Por favor selecciona una imagen para el producto.');
+                return;
+            }
+
+            const title = document.getElementById('prod-title').value;
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const category = document.getElementById('prod-category').value;
+            const description = document.getElementById('prod-desc').value;
+
+            const newProd = {
+                id: Date.now().toString(),
+                title,
+                price,
+                category,
+                description,
+                image: selectedImageDataUrl
+            };
+
+            // Add to array and save
+            products.unshift(newProd);
+            saveProductsToStorage();
+
+            // Reset form
+            document.getElementById('add-product-form').reset();
+            selectedImageDataUrl = '';
+            document.getElementById('preview-container').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+
+            // Refresh UI
+            renderProducts();
+            
+            // Notification feedback
+            alert('¡Producto publicado con éxito en el catálogo!');
+        }
+
+        // Render Admin Products List for Deletion
+        function renderAdminList() {
+            const list = document.getElementById('admin-products-list');
+            list.innerHTML = '';
+
+            if (products.length === 0) {
+                list.innerHTML = '<p class="text-xs text-slate-500">No hay productos cargados.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3 rounded-xl bg-brand-dark border border-brand-border hover:border-slate-600 transition-all";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover bg-brand-card">
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${p.title}</h4>
+                            <p class="text-[10px] text-slate-400">$${p.price} | ${p.category}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteProduct('${p.id}')" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Eliminar
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Delete Product
+        function deleteProduct(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                products = products.filter(p => p.id !== id);
+                saveProductsToStorage();
+                renderProducts();
+            }
+        }
+
+        // Quote Modal Functions
+        function openQuoteModal(title, price) {
+            document.getElementById('quote-prod-title').innerText = title;
+            document.getElementById('quote-prod-price').innerText = `$${Number(price).toLocaleString()}`;
+            document.getElementById('quote-modal').classList.remove('hidden');
+        }
+
+        function closeQuoteModal() {
+            document.getElementById('quote-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
